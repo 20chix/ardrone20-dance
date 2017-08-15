@@ -13,6 +13,7 @@ import time
 from ardrone_autonomy.msg import Navdata # for receiving navdata feedback
 # An enumeration of Drone Statuses
 from drone_status import DroneStatus
+import pid
 
 c_max_critical_time = 3
 c_min_critical_time = 0.2
@@ -37,13 +38,19 @@ class DroneMaster:
 		self.airborne = False
 		self.max_critical_time = 3 # sec
 		self.min_critical_time = 0.2 # sec
+		self.vx = self.vy = self.vz = self.ax = self.ay = self.az = 0.0
+		# gain_p, gain_i, gain_d
+        self.linearxpid = pid.Pid2( 0.5, 0.0, 0.5 )
+        self.linearypid = pid.Pid2( 0.5, 0.0, 0.5 )
 
 	def ReceiveNavdata(self,navdata):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		self.status = navdata.state
-
+		self.vx = data.vx/1e3
+        self.vy = data.vy/1e3
+        self.vz = data.vz/1e3	
+		
 	def getStatus(self):
-		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		return self.status
 
 	def takeoff(self, distance, a_timeout=0):
@@ -59,22 +66,22 @@ class DroneMaster:
 		self.airborne = False		
 
 	def move_right(self, distance, a_timeout=0):
-		self.parameters.linear.y = -self.speed
+		self.parameters.linear.y = self.linearypid.update( -self.speed, self.vy, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_left(self, distance, a_timeout=0):
-		self.parameters.linear.y = self.speed
+		self.parameters.linear.y = self.linearypid.update( self.speed, self.vy, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_forward(self, distance, a_timeout=0):
-		self.parameters.linear.x = self.speed
+		self.parameters.linear.x = self.linearxpid.update(self.speed , self.vx, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_backward(self, distance, a_timeout=0):
-		self.parameters.linear.x = -self.speed
+		self.parameters.linear.x = self.linearxpid.update(-self.speed , self.vx, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 	
@@ -89,7 +96,7 @@ class DroneMaster:
 		time.sleep(a_timeout)
 
 	def yaw_left(self, speed, a_time):
-		self.parameters.angular.z = self.speed
+		self.parameters.angular.z = self.speed 
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_time)
 
