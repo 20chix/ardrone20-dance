@@ -1,0 +1,5 @@
+<launch>
+    <node name="set_position" pkg="ardance" type="set_position.py" output="screen"/>
+    <!--<node name="decode_music" pkg="ardance" type="decode_music.py" output="screen"/>-->
+
+</launch>
