@@ -40,15 +40,17 @@ class DroneMaster:
 		self.min_critical_time = 0.2 # sec
 		self.vx = self.vy = self.vz = self.ax = self.ay = self.az = 0.0
 		# gain_p, gain_i, gain_d
-        self.linearxpid = pid.Pid2( 0.5, 0.0, 0.5 )
-        self.linearypid = pid.Pid2( 0.5, 0.0, 0.5 )
+		self.linearxpid = pid.Pid2( 0.5, 0.0, 0.5 )
+		self.linearypid = pid.Pid2( 0.5, 0.0, 0.5 )
+		self.last_time = None
 
 	def ReceiveNavdata(self,navdata):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
 		self.status = navdata.state
-		self.vx = data.vx/1e3
-        self.vy = data.vy/1e3
-        self.vz = data.vz/1e3	
+		self.vx = navdata.vx/1e3
+		self.vy = navdata.vy/1e3
+		self.vz = navdata.vz/1e3
+
 		
 	def getStatus(self):
 		return self.status
@@ -66,21 +68,49 @@ class DroneMaster:
 		self.airborne = False		
 
 	def move_right(self, distance, a_timeout=0):
+		if self.last_time == None:
+			self.last_time = rospy.Time.now()
+			dt = 0.0
+		else:
+			now_time = rospy.Time.now()
+			dt = ( now_time - self.last_time ).to_sec()
+			self.last_time = now_time
 		self.parameters.linear.y = self.linearypid.update( -self.speed, self.vy, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_left(self, distance, a_timeout=0):
+		if self.last_time == None:
+			self.last_time = rospy.Time.now()
+			dt = 0.0
+		else:
+			now_time = rospy.Time.now()
+			dt = ( now_time - self.last_time ).to_sec()
+			self.last_time = now_time		
 		self.parameters.linear.y = self.linearypid.update( self.speed, self.vy, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_forward(self, distance, a_timeout=0):
+		if self.last_time == None:
+			self.last_time = rospy.Time.now()
+			dt = 0.0
+		else:
+			now_time = rospy.Time.now()
+			dt = ( now_time - self.last_time ).to_sec()
+			self.last_time = now_time		
 		self.parameters.linear.x = self.linearxpid.update(self.speed , self.vx, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_backward(self, distance, a_timeout=0):
+		if self.last_time == None:
+			self.last_time = rospy.Time.now()
+			dt = 0.0
+		else:
+			now_time = rospy.Time.now()
+			dt = ( now_time - self.last_time ).to_sec()
+			self.last_time = now_time		
 		self.parameters.linear.x = self.linearxpid.update(-self.speed , self.vx, 0.0, dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
