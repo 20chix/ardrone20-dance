@@ -39,10 +39,12 @@ class DroneMaster:
 		self.max_critical_time = 3 # sec
 		self.min_critical_time = 0.2 # sec
 		self.vx = self.vy = self.vz = self.ax = self.ay = self.az = 0.0
+		self.x = self.y = self.z = self.alfa = self.betta = self.gamma = 0.0
 		# gain_p, gain_i, gain_d
 		self.linearxpid = pid.Pid2( 0.5, 0.0, 0.5 )
 		self.linearypid = pid.Pid2( 0.5, 0.0, 0.5 )
 		self.last_time = None
+		self.dt = 0.0
 
 	def ReceiveNavdata(self,navdata):
 		# Although there is a lot of data in this packet, we're only interested in the state at the moment	
@@ -50,7 +52,16 @@ class DroneMaster:
 		self.vx = navdata.vx/1e3
 		self.vy = navdata.vy/1e3
 		self.vz = navdata.vz/1e3
-
+		if self.last_time == None:
+			self.last_time = rospy.Time.now()
+			self.dt = 0.0
+		else:
+			now_time = rospy.Time.now()
+			self.dt = ( now_time - self.last_time ).to_sec()
+			self.last_time = now_time
+		self.x = self.x + self.vx * self.dt	
+		self.y = self.y + self.vy * self.dt	
+		self.z = self.z + self.vz * self.dt	
 		
 	def getStatus(self):
 		return self.status
@@ -65,53 +76,35 @@ class DroneMaster:
 
 	def reset(self):
 		self.publisher_reset.publish( Empty() )
-		self.airborne = False		
+		self.airborne = False
+
+	def goTo(self, x, y, z, dt):
+		self.clear()
+		while abs(x-self.x)>0.05 and abs(y-self.y)>0.05 and abs(z-self.z)>0.05:
+			self.parameters.linear.x = (x-self.x)/10
+			self.parameters.linear.y = (y-self.y)/10
+			self.parameters.linear.z = (z-self.z)/10
+			self.publisher_parameters.publish( self.parameters )
+			time.sleep(dt)
+
 
 	def move_right(self, distance, a_timeout=0):
-		if self.last_time == None:
-			self.last_time = rospy.Time.now()
-			dt = 0.0
-		else:
-			now_time = rospy.Time.now()
-			dt = ( now_time - self.last_time ).to_sec()
-			self.last_time = now_time
-		self.parameters.linear.y = self.linearypid.update( -self.speed, self.vy, 0.0, dt )
+		self.parameters.linear.y = self.linearypid.update( -self.speed, self.vy, 0.0, self.dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
 	def move_left(self, distance, a_timeout=0):
-		if self.last_time == None:
-			self.last_time = rospy.Time.now()
-			dt = 0.0
-		else:
-			now_time = rospy.Time.now()
-			dt = ( now_time - self.last_time ).to_sec()
-			self.last_time = now_time		
-		self.parameters.linear.y = self.linearypid.update( self.speed, self.vy, 0.0, dt )
+		self.parameters.linear.y = self.linearypid.update( self.speed, self.vy, 0.0, self.dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
-	def move_forward(self, distance, a_timeout=0):
-		if self.last_time == None:
-			self.last_time = rospy.Time.now()
-			dt = 0.0
-		else:
-			now_time = rospy.Time.now()
-			dt = ( now_time - self.last_time ).to_sec()
-			self.last_time = now_time		
-		self.parameters.linear.x = self.linearxpid.update(self.speed , self.vx, 0.0, dt )
+	def move_forward(self, distance, a_timeout=0):	
+		self.parameters.linear.x = self.linearxpid.update(self.speed , self.vx, 0.0, self.dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 
-	def move_backward(self, distance, a_timeout=0):
-		if self.last_time == None:
-			self.last_time = rospy.Time.now()
-			dt = 0.0
-		else:
-			now_time = rospy.Time.now()
-			dt = ( now_time - self.last_time ).to_sec()
-			self.last_time = now_time		
-		self.parameters.linear.x = self.linearxpid.update(-self.speed , self.vx, 0.0, dt )
+	def move_backward(self, distance, a_timeout=0):	
+		self.parameters.linear.x = self.linearxpid.update(-self.speed , self.vx, 0.0, self.dt )
 		self.publisher_parameters.publish( self.parameters )
 		time.sleep(a_timeout)
 	
@@ -170,4 +163,4 @@ class DroneMaster:
 		self.parameters.angular.x = 0
 		self.parameters.angular.y = 0
 		self.parameters.angular.z = 0
-		self.publisher_parameters.publish( self.parameters )	
+#		self.publisher_parameters.publish( self.parameters )	

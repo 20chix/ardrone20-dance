@@ -22,7 +22,6 @@ class Dance():
         
     def __init__(self):
 
-
         dir_path = os.path.dirname(os.path.abspath(__file__))
         musics=[]
         while not musics:
@@ -96,18 +95,25 @@ class Dance():
         time.sleep(5)
         pygame.mixer.music.load(self.audio_path)
         pygame.mixer.music.play(-1,0.0)
-        
+        self.copter.clear()
+        self.copter.goTo(0, 2, 0, 0.01)
+        print 'x='+str(round(self.copter.x,3))+'; y='+str(round(self.copter.y,3))+'; z='+str(round(self.copter.z,3))        
+        self.copter.goTo(0, 0, 0, 0.01)
+        print 'x='+str(round(self.copter.x,3))+'; y='+str(round(self.copter.y,3))+'; z='+str(round(self.copter.z,3))
+ 
+        #while True:
+        #    self.copter.clear()
+        #    time.sleep(0.5)
+        #    for event in pygame.event.get():
+        #        if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+        #            self.interruptFlying()
+        #            sys.exit()
+        #        else
 
-        while True:
-            self.copter.clear()
-            time.sleep(0.5)
-            for event in pygame.event.get():
-                if (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
-                    self.interruptFlying()
-                    sys.exit()
-            anim_num = random.randint(0, len(self.functionList)-1)
-            function = self.functionList[anim_num]
-            self.copter.stream(function[0], function[1], 0.7)
+                    
+            #anim_num = random.randint(0, len(self.functionList)-1)
+            #function = self.functionList[anim_num]
+            #self.copter.stream(function[0], function[1], 0.7)
         #working loop 
         '''       
         for t in self.timing:
