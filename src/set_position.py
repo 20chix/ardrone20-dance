@@ -96,9 +96,10 @@ class Dance():
         pygame.mixer.music.load(self.audio_path)
         pygame.mixer.music.play(-1,0.0)
         self.copter.clear()
-        self.copter.goTo(0, 2, 0, 0.01)
-        print 'x='+str(round(self.copter.x,3))+'; y='+str(round(self.copter.y,3))+'; z='+str(round(self.copter.z,3))        
-        self.copter.goTo(0, 0, 0, 0.01)
+        self.copter.goTo(1.5, 0, 0, 0.02)
+        print 'x='+str(round(self.copter.x,3))+'; y='+str(round(self.copter.y,3))+'; z='+str(round(self.copter.z,3))
+        print 'Go back!'        
+        self.copter.goTo(0, 0, 0, 0.02)
         print 'x='+str(round(self.copter.x,3))+'; y='+str(round(self.copter.y,3))+'; z='+str(round(self.copter.z,3))
  
         #while True:

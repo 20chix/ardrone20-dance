@@ -14,7 +14,8 @@ import os
 
 class Warn():
     
-    def __init__(self): 
+    def __init__(self):
+        rospy.init_node('reset_ardrone', disable_signals=True) 
         self.publisher_reset = rospy.Publisher(  '/ardrone/reset', Empty )
         self.publisher_land  = rospy.Publisher(  '/ardrone/land',      Empty )
         
@@ -25,18 +26,5 @@ class Warn():
         self.publisher_land.publish( Empty())
     
 if __name__ == '__main__':
-    dir_path = os.path.dirname(os.path.abspath(__file__))
-    musics=[]
-    while not musics:
-        files = os.listdir(dir_path+'/music')
-        musics = filter(lambda x: x.endswith('.mp3'), files)
-    
-    audio_path = dir_path +'/music/'+ musics[0]
-    
-    print audio_path
-    pygame.init()
-    pygame.mixer.init()
-    pygame.mixer.music.load(audio_path)
-    pygame.mixer.music.play(-1,0.0)
-    while True:
-        print 'lalalal'
+    w = Warn()
+    w.reset();

@@ -61,7 +61,8 @@ class DroneMaster:
 			self.last_time = now_time
 		self.x = self.x + self.vx * self.dt	
 		self.y = self.y + self.vy * self.dt	
-		self.z = self.z + self.vz * self.dt	
+		self.z = self.z + self.vz * self.dt
+		print 'ReceiveNavdata x='+str(round(self.x,3))+'; y='+str(round(self.y,3))+'; z='+str(round(self.z,3))	
 		
 	def getStatus(self):
 		return self.status
@@ -80,11 +81,12 @@ class DroneMaster:
 
 	def goTo(self, x, y, z, dt):
 		self.clear()
-		while abs(x-self.x)>0.05 and abs(y-self.y)>0.05 and abs(z-self.z)>0.05:
+		while abs(x-self.x)>0.05 or abs(y-self.y)>0.05 or abs(z-self.z)>0.05:
 			self.parameters.linear.x = (x-self.x)/10
 			self.parameters.linear.y = (y-self.y)/10
 			self.parameters.linear.z = (z-self.z)/10
 			self.publisher_parameters.publish( self.parameters )
+			print 'goTo x='+str(round(self.x,3))+'; y='+str(round(self.y,3))+'; z='+str(round(self.z,3))
 			time.sleep(dt)
 
 

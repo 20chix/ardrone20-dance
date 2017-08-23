@@ -1,0 +1,3 @@
+<launch>
+    <node name="reset_ardrone" pkg="ardance" type="warning.py" output="screen"/>
+</launch>
